@@ -1,0 +1,47 @@
+---
+title: 如果你想删除分支
+description: 删除 git 分支时的一些步骤
+createdTime: 2024-02-21
+tags: ['git']
+---
+
+## 你先在远程删除了远程分支
+
+并想删除本地的对应分支，以及删除本地仓库中的引用信息。
+
+以下是具体的步骤：
+
+1. 切换到你想要删除的分支：
+
+    ```bash
+    git checkout <branch_name>
+    // 或者用，更推荐使用 switch 来切换分支
+    git switch <branch_name>
+    ```
+
+2. 删除远程分支：
+
+    ```bash
+    git push origin --delete <branch_name>
+    ```
+
+    这条命令会告诉 Git，你希望删除 origin 服务器上名为 `<branch_name>` 的分支。
+
+3. 删除本地分支：
+
+    ```bash
+    git branch -d <branch_name>
+    ```
+
+    这条命令将会删除本地的分支。如果分支尚未合并，你可以使用`-D`选项强制删除。
+
+4. 更新你的本地仓库，以从远程仓库中移除已经删除的分支引用：
+
+    ```bash
+    git fetch --prune origin
+
+    ```
+
+    `-prune`选项告诉 Git 移除所有在远程仓库已经不存在的远程分支引用。
+
+以上就是删除 git 仓库本地的远程分支的步骤。

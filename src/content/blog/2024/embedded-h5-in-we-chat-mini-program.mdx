@@ -1,0 +1,68 @@
+---
+title: 微信小程序内嵌 H5 页面
+description: 在微信小程序中内嵌 H5 页面遇到的若干问题
+createdTime: 2024-07-14
+updatedTime: 2024-07-22
+tags: ['wechat', 'h5', 'jssdk', 'mixed']
+---
+
+在开发微信小程序中内嵌 H5 页面时，遇到了一些问题，这里记录一下。
+
+## JSSDK 的初始化
+
+在 Taro 小程序层面，不需要关心 JSSDK 的初始化，因为 Taro 已经帮我们做了这个事情。但是在 H5 页面中，我们需要自己初始化 JSSDK。
+
+```javascript
+import wx from 'weixin-js-sdk';
+
+const url = window.location.href.split('?')[0]
+const signature = await getWxH5JSdkSignature(url, WX_H5_APP_ID)
+wx.config({
+  debug: false,
+  appId: signature.appId,
+  timestamp: signature.timestamp,
+  nonceStr: signature.nonceStr,
+  signature: signature.signature,
+  jsApiList: ['getLocation', 'chooseImage'],
+  success(res) {},
+})
+```
+
+这里的 `url` 需要满足以下条件：
+  1. 必须是 HTTPS 地址。所以在本地开发时，必须将本地地址映射为 HTTPS 地址。（开发体验非常不好）
+  2. 必须是 `WX_H5_APP_ID` 对应微信公众号后台注册过的`JS接口安全域名`。详情可见 → [JSSDK 使用步骤](https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/JS-SDK.html#步骤一：绑定域名)
+  3. URL 必须是初始化页面的地址，不能带参数。
+
+而 `getWxH5JSdkSignature` 是一个后端接口，用于获取微信 JSSDK 的签名信息。详情可见 → [附录 1-JS-SDK 使用权限签名算法](https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/JS-SDK.html#附录1-JS-SDK使用权限签名算法)
+
+`APP ID`: 在哪初始化，APPID 就用谁的 `APP ID`。如果是在微信小程序层面，那么就是小程序的 `APP ID`；如果是在 H5 页面中，那么就是 H5 页面绑定的公众号 `APP ID`。哪怕是小程序内嵌 H5 页面，在 H5 初始化那就用 H5 页面绑定的公众号 `APP ID`。
+
+`jsApiList` 是需要使用的 JSSDK API 列表，使用 API 必须在此初始，不然无法使用。这里只列出了 `getLocation` 和 `chooseImage` 两个 API，更多 API 可以查看 → [附录 2-所有 JS 接口列表](https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/JS-SDK.html#附录2-所有JS接口列表)
+
+## 微信定位：getLocation
+
+### H5 页面中的定位
+
+在开发阶段，使用【微信开发者工具 - 公众号网页】打开对应的 H5 页面，使用 `getLocation` 获取定位信息，定位结果是偏移比较大的。
+
+哪怕是直接在微信里访问 H5 页面，定位结果也是偏移比较大的。~可能是因为微信在 H5 页面中获取定位信息时，会对定位结果进行偏移处理，以保护用户隐私。~ 找到解释了！不过这解释，居然不是在微信文档里…… [详情](https://lbs.qq.com/faq/miniprogramFaq/wxJsSdk)
+
+> 在开发者工具使用 wx.getlocation 方法使用的是 IP 定位，定位有偏差是正常的，非 SDK 问题，无需排查解决。
+
+但嵌套在小程序中的 H5 页面，假如是在微信开发者工具中在小程序中打开 H5 页面，是无法弹出定位授权的。（时间静止第 1 次
+
+这时候就需要在真机小程序中打开 H5 页面进行定位，才能弹出定位授权。并且在真机小程序中打开 H5 页面进行定位时，定位结果却是比较准确的。（时间静止第 2 次
+
+迷惑……持续的迷惑……，无语……持续的无语……
+
+但至始至终也只能是经纬度信息，无法获取到详细的地址信息，比如：省市区、街道等。
+
+这时候就再需要其他的服务来获取详细的地址信息。比如腾讯自己的 [地图服务](https://lbs.qq.com/service/webService/webServiceGuide/address/Gcoder)。
+
+## CSS 高度单位
+
+~在某个 H5 页面中，我使用 `100vh` 来作为整个页面的 `min-height`。但这在实际使用中大概率会造成该 H5 页面在微信中无法滚动。~
+
+~最终只好设置单位为 'px'，比如：`min-height: 400px`，这样就可以在微信中正常滚动了。~
+
+破案了，不是微信内嵌浏览器的问题，是 H5 中使用的组件库的 [问题](https://github.com/Tencent/tdesign-mobile-vue/issues/1503) ……不过也被我 [修复](https://github.com/Tencent/tdesign-mobile-vue/pull/1504) 了！🎉

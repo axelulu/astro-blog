@@ -1,0 +1,71 @@
+---
+title: Raspbian Lab
+description: 基于树莓派的服务器搭建
+createdTime: 2023-10-21
+tags: ['raspbian', 'server', 'lab']
+---
+
+## 硬件准备
+
+- 树莓派 4B
+  - RAM：2GB
+  - CPU：4 核 Cortex-A72（ARM v8）64 位 SoC @ 1.5GHz
+  - TF 卡：至少 16GB
+  - 网络：以太网口
+
+## 系统安装
+
+在这里，我使用的是 [Debian Pi Aarch64](https://github.com/openfans-community-offical/Debian-Pi-Aarch64)
+> This is the first 64-bit system in the world to support all Raspberry Pi 64-bit hardware!!! (Include: PI400,4B,3B+,3B,3A+,Zero2W)
+
+官方下载地址指引：[Debian-Pi-Aarch64 更新及升级](https://github.com/openfans-community-offical/Debian-Pi-Aarch64/blob/master/README_zh.md#5更新及升级)
+
+具体的安装步骤，可以参考 Debian Pi Aarch64 官方的 `README.md` 即可。很简单。
+
+## 解除 Debian root 账号无法 SSH 的限制
+
+解锁这个主要是为了方便在 NeoServer 这样的 App 上直接操作文件。
+
+1. 先设置 root 密码，默认是没有的
+
+    ```zsh
+    sudo passwd root
+    ```
+
+2. 切换到 root 账号
+
+    ```zsh
+    sudo -i
+    ```
+3. 修改 `/etc/ssh/sshd_config` 文件
+
+    3.1 打开文件
+
+        ```zsh
+        vim /etc/ssh/sshd_config
+        ```
+
+    3.2 找到以下内容这一行
+
+        ```zsh
+        PermitRootLogin prohibit-password
+        ```
+
+    3.3 修改/新增一行为以下内容，然后保存退出
+
+        ```zsh
+        PermitRootLogin yes
+        ```
+    3.4 重启 SSH 服务
+
+        ```zsh
+        systemctl restart ssh
+        ```
+
+现在，你可以使用 root 账号通过 SSH 登录到 Debian 系统了。请注意，启用 root 账号登录可能会增加系统的安全风险，因此请谨慎使用。
+
+## 安装 Docker
+
+该系统镜像是自带 docker 的，所以不需要再安装 docker。只不过需要更新一下 docker 版本。
+
+假如你要使用 1Panel 之类的面板，那么你可以在安装 1Panel 时就可以得到更新，也可以避免安装 1Panel 时出现失败。这个安装失败在某些地区用户中出现的概率比较高。所以更建议安装的网络环境能够访问到国外的网络。

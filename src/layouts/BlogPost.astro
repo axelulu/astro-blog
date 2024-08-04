@@ -1,0 +1,111 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import dayjs from 'dayjs'
+import BaseHead from '../components/BaseHead.astro'
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import GetThemePreference from '@/components/GetThemePreference.astro'
+import OGImagePost from '@/components/og-image/Post'
+import '@/styles/index.css'
+import { AUTHOR, SITE } from '@/constants'
+import { Separator } from '@/components/ui/separator'
+
+type Props = CollectionEntry<'blog'>['data'] & {
+  minutesRead?: string
+}
+const { title, description, createdTime, updatedTime, minutesRead, tags } = Astro.props
+const formatcreatedTime = `created on ${dayjs(createdTime).format('YYYY-MM-DD')}`
+const formatupdatedTime = updatedTime ? `updated on ${dayjs(updatedTime).format('YYYY-MM-DD')}` : '';
+
+---
+
+<script>
+const copyButtonLabel = 'Copy'
+const codeBlocks = Array.from(document.querySelectorAll('pre'))
+
+for (const codeBlock of codeBlocks) {
+  const wrapper = document.createElement('div')
+  wrapper.style.position = 'relative'
+
+  const copyButton = document.createElement('button')
+  copyButton.className = 'copy-code font-sans'
+  copyButton.innerHTML = copyButtonLabel
+
+  codeBlock.setAttribute('tabindex', '0')
+  codeBlock.appendChild(copyButton)
+  // wrap codebock with relative parent element
+  if (codeBlock.parentNode) {
+    codeBlock.parentNode.insertBefore(wrapper, codeBlock)
+  }
+  wrapper.appendChild(codeBlock)
+
+  copyButton.addEventListener('click', async () => {
+    await copyCode(codeBlock, copyButton)
+  })
+}
+
+async function copyCode(block: HTMLElement, button: HTMLButtonElement) {
+  const code = block.querySelector('code')
+  const text = code?.textContent ?? ''
+
+  await navigator.clipboard.writeText(text)
+
+  // visual feedback that task is completed
+  button.textContent = 'Copied'
+
+  setTimeout(() => {
+    button.textContent = copyButtonLabel
+  }, 700)
+}
+
+document.querySelector('main')?.querySelectorAll('a').forEach((a) => {
+  if (/^https?:\/\//.test(a.href)) {
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+  }
+})
+</script>
+
+
+
+<html lang="en">
+  <head>
+    <BaseHead title={title} description={description} />
+  </head>
+  <body class="dark:bg-grid-[#1c1c1c] bg-grid-[#f3f4f6]">
+    <Header />
+    <GetThemePreference />
+    <main class="w-full flex flex-col justify-center items-center">
+      <article>
+      <OGImagePost title={title} description={description} site={SITE} createdTime={createdTime} author={AUTHOR} />
+        <div class="prose m-auto p-4 slide-enter whitespace-normal">
+          <div class="title mb-4 py-4 leading-none">
+            <h1 class="m-0 mb-2 !text-3xl font-bold">{title}</h1>
+            <blockquote class="!not-italic">{description}</blockquote>
+            <div class="flex opacity-50 space-x-2 text-sm font-bold">
+              <div>{minutesRead}</div>
+            </div>
+            <div class="flex opacity-50 space-x-2 text-sm font-bold">
+              <div>{formatcreatedTime}</div>
+              {formatupdatedTime && <div>/ {formatupdatedTime}</div>}
+            </div>
+            <div class="flex items-center space-x-2 text-sm">
+               { tags && tags.map((tag, index) => (
+                  <>
+                    <div>#{tag}</div>
+                    {index !== tags.length - 1 && <Separator orientation="vertical" />}
+                  </>
+                ))}
+            </div>
+
+            <hr class="!my-4" />
+          </div>
+          <div class="whitespace-normal">
+            <slot />
+          </div>
+        </div>
+      </article>
+    </main>
+    <Footer />
+  </body>
+</html>

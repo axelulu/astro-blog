@@ -1,0 +1,23 @@
+---
+import { borders, classnames, fontWeight, padding } from 'tailwindcss-classnames'
+import { SITE_TITLE } from '../constants'
+import HeaderLink from './HeaderLink.astro'
+import SwitchTheme from '@/components/SwitchTheme'
+import '@/styles/global.css'
+
+const styleHeaderLink = classnames(padding('py-4', 'px-2'), borders('border-b-4', 'border-transparent'), fontWeight('active:font-bold'))
+---
+
+<header class={padding('px-4')}>
+  <nav class="flex items-center justify-between">
+    <h2 class="text-lg m-0">
+      <HeaderLink href="/">
+        <img src="https://avatars.githubusercontent.com/QuentinHsu" alt={SITE_TITLE} class="h-8 rounded-full" />
+      </HeaderLink>
+    </h2>
+    <div class="internal-links flex items-center justify-end space-x-4 w-20">
+      <HeaderLink href="/blog" class={styleHeaderLink}>Blog</HeaderLink>
+      <SwitchTheme client:only="react" className="h-7 inline-block" />
+    </div>
+  </nav>
+</header>

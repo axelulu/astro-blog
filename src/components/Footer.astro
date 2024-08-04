@@ -1,0 +1,45 @@
+---
+import { type TTextColor, alignItems, classnames, display, flexDirection, fontFamily, fontSize, justifyContent, padding, space, textColor, transitionDuration, width } from 'tailwindcss-classnames'
+import IconAstro from '@/components/icon/Astro.tsx'
+import WaveReveal from '@/components/animata/text/wave-reveal'
+
+const styleSlog = classnames(
+  fontSize('md:text-sm', 'text-sm'),
+  fontFamily('font-serif'),
+  textColor(
+    'text-gray-700',
+    'hover:!text-gray-500',
+  ),
+  transitionDuration('duration-700'),
+);
+---
+
+<footer>
+  <div class={classnames(display('flex'), flexDirection('flex-col'), justifyContent('justify-center'), alignItems('items-center'), space('space-y-2'), padding('pb-4'))}>
+    <WaveReveal
+      text="人生本就過的不愉快，那就來點羅曼蒂克。"
+      className={styleSlog}
+    />
+    <WaveReveal
+      text="Life's tough, let's be romantic."
+      duration="2000ms"
+      className={styleSlog}
+    />
+    <a href="https://github.com/withastro/astro" target="_blank" title="Astro on GitHub">
+      <div class={
+        classnames(
+          width('w-8'),
+          textColor(
+            'dark:text-gray-400',
+            'text-gray-600',
+            'dark:hover:text-gray-200' as TTextColor,
+          ),
+          transitionDuration('duration-700'),
+        )
+      }
+      >
+        <IconAstro />
+      </div>
+    </a>
+  </div>
+</footer>

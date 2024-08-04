@@ -1,0 +1,53 @@
+---
+import { type TBackgrounds, type THeight, alignItems, backgrounds, classnames, display, flexDirection, height, justifyContent, width } from 'tailwindcss-classnames'
+import BaseHead from '../components/BaseHead.astro'
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import { SITE_DESCRIPTION, SITE_TITLE } from '../constants'
+import '@/styles/index.css'
+import GetThemePreference from '@/components/GetThemePreference.astro'
+import Introduction from '@/components/page/open-source/Introduction.tsx'
+import PullRequests from '@/components/page/open-source/PullRequests'
+---
+
+<script is:inline>
+</script>
+
+
+<html lang="en">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <body class={classnames(
+    height('h-screen'),
+    display('flex'),
+    flexDirection('flex-col'),
+    backgrounds('dark:bg-grid-[#1c1c1c]' as TBackgrounds, 'bg-grid-[#f3f4f6]' as TBackgrounds),
+  )}
+  >
+    <GetThemePreference />
+    <header>
+      <Header />
+    </header>
+    <main class="w-full flex flex-col justify-center items-center animate-delay-[1.2s] animate-slide-enter">
+      <container class={
+        classnames(
+          width('md:w-1/2', 'w-11/12'),
+          height('min-h-[80vh]' as THeight),
+          display('flex'),
+          flexDirection('flex-col'),
+          justifyContent('justify-center'),
+          alignItems('items-center'),
+        )
+      }
+      >
+      <article>
+        <Introduction />
+        <PullRequests client:only="react" />
+      </article>
+      </container>
+      <Footer />
+    </main>
+  </body>
+</html>
+

@@ -1,0 +1,143 @@
+---
+title: 使用 GPG 签名
+description: 生成 GPG 密钥用于 Git 提交
+createdTime: 2023-09-17
+tags: ['git', 'signature', 'gpg']
+---
+
+除了 SSH 密钥外，还可以使用 GPG 密钥来对 Git 提交进行签名。GPG 是一个用于加密和签名数据的开源加密工具。通过使用 GPG 密钥，你可以确保你的提交是由你本人创建的。
+
+## 创建一个 GPG 密钥 用于 Git commit
+
+以下是在 macOS 上生成 GPG 密钥的步骤：
+
+1. 首先，你需要安装 GnuPG。在 macOS 上，你可以通过 Homebrew 来安装。如果你还没有安装 Homebrew，你可以通过以下命令来安装：
+
+    ```zsh
+    /bin/zsh -c "$(curl -fsSL <https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh>)"
+    ```
+
+2. 然后，通过以下命令来安装 GnuPG：
+
+    ```zsh
+    brew install gnupg
+    ```
+
+3. 生成新的 GPG 密钥。在终端中运行以下命令来开始生成密钥：
+
+    ```zsh
+    gpg --full-generate-key
+    ```
+
+4. 接下来，它会询问你要生成哪种类型的密钥。选择“1”（RSA 和 RSA）。
+5. 然后，它会询问你的密钥的大小。建议你选择 4096。
+6. 接下来，它会询问你的密钥的有效期。你可以根据你的需要设置，或者选择“0”表示密钥永不过期。
+7. 接下来，它会要求你确认你的选择，并输入你的用户信息。这包括你的名字，电子邮件地址，以及一个可选的注释。你需要确保你输入的电子邮件地址与你的 GitHub 帐户的电子邮件地址相匹配。
+8. 最后，它会要求你输入一个密码来保护你的密钥。
+9. 生成密钥后，运行以下命令来列出你的 GPG 密钥：
+
+    ```zsh
+    gpg --list-secret-keys --keyid-format LONG
+    ```
+
+10. 在列出的信息中，复制“GPG 密钥 ID”部分的长 ID。
+11. 将你的 GPG 密钥添加到你的 GitHub 账户。在 GitHub 的设置中，点击“SSH 和 GPG 密钥”，然后点击“新的 GPG 密钥”。在“Key”字段中，粘贴你的 GPG 密钥。
+12. 最后，告诉 Git 使用你的 GPG 密钥。运行以下命令，将 `<key>` 替换为你的 GPG 密钥 ID：
+
+    （不推荐全局配置）
+
+    ```zsh
+    git config --global user.signingkey <key>
+    git config --global commit.gpgsign true
+    ```
+
+    那什么是 “GPG 密钥 ID” 呢？
+
+    - GPG 密钥 ID
+        1. 使用 `gpg --list-secret-keys --keyid-format=long` 命令列出你拥有其公钥和私钥的长形式 GPG 密钥。签名提交或标记需要私钥。
+
+            ```zsh
+            gpg --list-secret-keys --keyid-format=long
+            ```
+
+            注意：Linux 上的某些 GPG 安装可能需要改用 `gpg2 --list-keys --keyid-format LONG` 查看现有密钥的列表。在这种情况下，还需要通过运行 `git config --global gpg.program gpg2` 来配置 Git 以使用 `gpg2`。
+
+        2. 从 GPG 密钥列表中复制您想要使用的 GPG 密钥 ID 的长形式。在本例中，GPG 密钥 ID 为 `3AA5C34371567BD2`：
+
+            ```zsh
+            $ gpg --list-secret-keys --keyid-format=long
+            /Users/hubot/.gnupg/secring.gpg
+            ------------------------------------
+            sec   4096R/3AA5C34371567BD2 2016-03-10 [expires: 2017-03-10]
+            uid                          Hubot <hubot@example.com>
+            ssb   4096R/4BB6D45482678BE3 2016-03-10
+            ```
+
+
+    假如你的一台电脑上有多个不同的提交信息配置，且你又想每个提交信息用不同的 GPG 配置，可以这样做：
+
+    - 具体做法
+
+
+
+这样，你就可以使用你的 GPG 密钥进行 Git 提交了。
+
+```zsh
+❯ gpg --full-generate-key
+🎉 Start executing the command！[2023-09-12 21:47:08]
+
+gpg (GnuPG) 2.4.3; Copyright (C) 2023 g10 Code GmbH
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Please select what kind of key you want:
+   (1) RSA and RSA
+   (2) DSA and Elgamal
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+   (9) ECC (sign and encrypt) *default*
+  (10) ECC (sign only)
+  (14) Existing key from card
+Your selection? 1
+RSA keys may be between 1024 and 4096 bits long.
+What keysize do you want? (3072) 4096
+Requested keysize is 4096 bits
+Please specify how long the key should be valid.
+         0 = key does not expire
+      <n>  = key expires in n days
+      <n>w = key expires in n weeks
+      <n>m = key expires in n months
+      <n>y = key expires in n years
+Key is valid for? (0) 0
+Key does not expire at all
+Is this correct? (y/N) y
+
+GnuPG needs to construct a user ID to identify your key.
+
+Real name: work_user_name
+Email address: work_user_name@404.com
+Comment: used for work
+You selected this USER-ID:
+    "work_user_name (used for work) <work_user_name@404.com>"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? O
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+gpg: revocation certificate stored as '/Users/your_user_name/.gnupg/openpgp-revocs.d/8E797F6F7******************361558.rev'
+public and secret key created and signed.
+
+pub   rsa4096 2023-09-12 [SC]
+      8E797F6F7******************361558
+uid                      work_user_name (used for work) <work_user_name@404.com>
+sub   rsa4096 2023-09-12 [E]
+```
+
+## 参考资料
+
+- [生成新 GPG 密钥](https://docs.github.com/zh/authentication/managing-commit-signature-verification/generating-a-new-gpg-key)
